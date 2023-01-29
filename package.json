@@ -1,0 +1,31 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "A social media app for photographers",
+    "main": "server.js",
+    "scripts": {
+        "server": "nodemon server.js",
+        "start": "node server.js"
+    },
+    "author": "Naveen RK",
+    "license": "ISC",
+    "dependencies": {
+        "airport-codes": "^1.0.2",
+        "bcryptjs": "^2.4.3",
+        "cloudinary": "^1.33.0",
+        "convert-csv-to-json": "^1.5.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.0",
+        "mongoose": "^6.8.2",
+        "mongoose-unique-validator": "^3.1.0",
+        "random-datetime": "^1.0.1",
+        "random-hour": "^1.0.3",
+        "stripe": "^11.8.0",
+        "validator": "^13.7.0"
+    },
+    "devDependencies": {
+        "airline-codes": "^1.0.2"
+    }
+}
