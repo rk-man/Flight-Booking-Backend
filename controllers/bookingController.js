@@ -25,8 +25,8 @@ exports.createCheckoutSession = async (req, res, next) => {
             },
         ],
         mode: "payment",
-        success_url: `${process.env.FRONTEND_URL}/bookings/success`,
-        cancel_url: `${process.env.FRONTEND_URL}/booking/fail`,
+        success_url: `${process.env.FRONTEND_URL}/`,
+        cancel_url: `${process.env.FRONTEND_URL}/`,
     });
 
     return res.status(200).json({
