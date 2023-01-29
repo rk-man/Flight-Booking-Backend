@@ -5,11 +5,11 @@ const userController = require("./../controllers/userController");
 const router = express.Router();
 
 router.use(userController.protect);
-router.post(
-    "/import-flights",
-
-    flightController.createMultipleFlights
-);
+// router.post(
+//     "/import-flights",
+//
+//     flightController.createMultipleFlights
+// );
 
 router
     .route("/")
