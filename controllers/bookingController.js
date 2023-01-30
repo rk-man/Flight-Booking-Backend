@@ -1,25 +1,20 @@
+const Flight = require("../models/flightModel");
 const Booking = require("./../models/bookingModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 exports.createCheckoutSession = async (req, res, next) => {
     let { passengers, flight, totalPrice } = req.body;
-    let user = req.user;
-    const booking = await Booking.create({
-        passengers,
-        flight,
-        totalPrice,
-        isPaid: true,
-        owner: req.user._id,
-    });
+
+    let flightData = await Flight.findById(flight);
 
     const session = await stripe.checkout.sessions.create({
         line_items: [
             {
                 price_data: {
-                    currency: "usd",
+                    currency: "inr",
                     product_data: {
-                        name: "flight booking",
+                        name: flightData.name,
                     },
-                    unit_amount: totalPrice,
+                    unit_amount: totalPrice * 100,
                 },
                 quantity: 1,
             },
@@ -27,6 +22,14 @@ exports.createCheckoutSession = async (req, res, next) => {
         mode: "payment",
         success_url: `${process.env.FRONTEND_URL}/`,
         cancel_url: `${process.env.FRONTEND_URL}/`,
+    });
+
+    const booking = await Booking.create({
+        passengers,
+        flight,
+        totalPrice,
+        isPaid: true,
+        owner: req.user._id,
     });
 
     return res.status(200).json({
@@ -83,7 +86,9 @@ exports.onPaymentCompletion = async (req, res, next) => {
 
 exports.getAllBookings = async (req, res, next) => {
     try {
-        const bookings = await Booking.find({ owner: req.user._id });
+        const bookings = await Booking.find({ owner: req.user._id }).sort({
+            createdAt: -1,
+        });
         return res.status(200).json({
             status: "success",
             bookings,

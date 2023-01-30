@@ -20,6 +20,26 @@ const createAndSendToken = (res, statusCode, user) => {
 exports.registerUser = async (req, res, next) => {
     let user = null;
     try {
+        user = await User.findOne({
+            $or: [
+                {
+                    email: req.body.email,
+                },
+                {
+                    username: req.body.username,
+                },
+            ],
+        });
+
+        console.log(user);
+
+        if (user) {
+            return res.status(400).json({
+                status: "fail",
+                message: "User with that email or username already exists",
+            });
+        }
+
         // step 1 - create the user
         user = await User.create(req.body);
 
@@ -29,7 +49,8 @@ exports.registerUser = async (req, res, next) => {
         return res.status(400).json({
             status: "fail",
             err,
-            message: "Couldn't create user",
+            message:
+                "Password must have one special character, one capital letter and one number",
         });
     }
 };

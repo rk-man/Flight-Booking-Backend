@@ -2,8 +2,7 @@ const Flight = require("./../models/flightModel");
 // const airportCodes = require("airport-codes");
 // const airlineCodes = require("airline-codes");
 // const routes = require("./../config/convertToObject");
-// var randomDate = require("random-datetime");
-// const randomHour = require("random-hour");
+var randomDate = require("random-datetime");
 
 exports.createFlight = async (req, res, next) => {
     try {
@@ -118,7 +117,7 @@ const getRandom = (start, end) => {
 exports.getAllFlightCities = async (req, res, next) => {
     try {
         let flightCities = [];
-        if (req.query.search.length >= 3) {
+        if (req.query.search && req.query.search.length > 0) {
             let pattern = new RegExp(req.query.search, "i");
             console.log(pattern);
             flightCities = await Flight.find({
@@ -142,11 +141,39 @@ exports.getAllFlightCities = async (req, res, next) => {
     }
 };
 
+exports.getAllAirlines = async (req, res, next) => {
+    try {
+        let airlines = [];
+        if (req.query.search && req.query.search.length > 0) {
+            let pattern = new RegExp(req.query.search, "i");
+
+            airlines = await Flight.find({
+                name: {
+                    $regex: pattern,
+                },
+            }).select("name -_id");
+            airlines = airlines.map((airline, index) => {
+                return airline.name;
+            });
+
+            airlines = [...new Set(airlines)];
+        }
+        return res.status(200).json({
+            status: "Success",
+            total: airlines.length,
+            airlines,
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
 exports.getAllFlightsOnSpecifiedParams = async (req, res, next) => {
     try {
         let sourceTime = req.query.sourceTime;
         let sourceLoc = new RegExp(req.query.sourceLoc, "i");
         let destinationLoc = new RegExp(req.query.destinationLoc, "i");
+        let name = new RegExp(req.query.name, "i");
 
         if (sourceTime === "null" || sourceTime === "" || !sourceTime) {
             let flights = await Flight.find({
@@ -156,7 +183,10 @@ exports.getAllFlightsOnSpecifiedParams = async (req, res, next) => {
                 destinationLoc: {
                     $regex: destinationLoc,
                 },
-            });
+                name: {
+                    $regex: name,
+                },
+            }).sort({ sourceTime: 1 });
 
             return res.status(200).json({
                 status: "Success",
@@ -168,8 +198,6 @@ exports.getAllFlightsOnSpecifiedParams = async (req, res, next) => {
             let endingDate = new Date(startingDate);
             endingDate = new Date(endingDate.setDate(endingDate.getDate() + 1));
 
-            console.log(startingDate, endingDate);
-
             let flights = await Flight.find({
                 sourceLoc: {
                     $regex: sourceLoc,
@@ -180,6 +208,9 @@ exports.getAllFlightsOnSpecifiedParams = async (req, res, next) => {
                 },
                 destinationLoc: {
                     $regex: destinationLoc,
+                },
+                name: {
+                    $regex: name,
                 },
             });
 
@@ -210,6 +241,48 @@ exports.getFlight = async (req, res, next) => {
             status: "fail",
             err,
             message: "couldn;t get  flights",
+        });
+    }
+};
+
+exports.createManyFlights = async (req, res, next) => {
+    try {
+        let flight = await Flight.findById("63d604d3702c17fb138f7208");
+
+        console.log(flight);
+
+        let randomDepartureMonth = getRandom(2, 5);
+        let randomDepartureDate = randomDate({
+            year: 2023,
+            month: 4,
+            day: 21,
+            hour: getRandom(1, 23),
+        });
+
+        // return res.send(randomDepartureDate);
+        // let randomDepartureDate = new Date(flight.sourceTime);
+
+        let currentTime = randomDepartureDate.getTime();
+        let hour = getRandom(2, 12);
+        let arrivalDate = new Date(currentTime + hour * 60 * 60 * 1000);
+
+        flight = await Flight.create({
+            name: "SpiceJet Airlines",
+            sourceLoc: flight.sourceLoc,
+            destinationLoc: flight.destinationLoc,
+            sourceLocAirport: flight.sourceLocAirport,
+            destinationLocAirport: flight.destinationLocAirport,
+            sourceTime: randomDepartureDate,
+            arrivalTime: arrivalDate,
+        });
+        return res.status(200).json({
+            flight,
+        });
+    } catch (err) {
+        return res.status(400).json({
+            status: "fail",
+            err,
+            message: "couldn;t create many  flights",
         });
     }
 };

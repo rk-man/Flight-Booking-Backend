@@ -17,6 +17,9 @@ router
     .get(flightController.getAllFlightsOnSpecifiedParams);
 
 router.get("/all-cities", flightController.getAllFlightCities);
+router.get("/all-airlines", flightController.getAllAirlines);
+
+router.post("/create-many-flights", flightController.createManyFlights);
 
 router.get("/:id", flightController.getFlight);
 module.exports = router;
